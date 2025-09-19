@@ -1,6 +1,6 @@
-import type { FromSchema } from "json-schema-to-ts";
-
-export const EnvSchema = {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.EnvSchema = void 0;
+exports.EnvSchema = {
 	type: "object",
 	properties: {
 		PORT: { type: "number" },
@@ -8,6 +8,4 @@ export const EnvSchema = {
 	},
 	required: ["PORT", "HOST"],
 	additionalProperties: false,
-} as const;
-
-export type Config = FromSchema<typeof EnvSchema>;
+};

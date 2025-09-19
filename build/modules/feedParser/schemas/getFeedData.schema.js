@@ -1,4 +1,6 @@
-export const schema = {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.schema = void 0;
+exports.schema = {
 	tags: ["feed"],
 	summary: "Get feed data",
 	description: "Get feed data",
@@ -12,4 +14,4 @@ export const schema = {
 			},
 		},
 	},
-} as const;
+};

@@ -1,13 +1,14 @@
-import buildApp from "./app";
-
+var __importDefault =
+	(this && this.__importDefault) ||
+	((mod) => (mod && mod.__esModule ? mod : { default: mod }));
+Object.defineProperty(exports, "__esModule", { value: true });
+const app_1 = __importDefault(require("./app"));
 async function start() {
-	const fastify = await buildApp({
+	const fastify = await (0, app_1.default)({
 		logger: true,
 	});
-
 	const port = fastify.config.PORT;
 	const host = fastify.config.HOST;
-
 	fastify.listen({ port, host }, (err, address) => {
 		if (err) {
 			console.log(err);
@@ -16,5 +17,4 @@ async function start() {
 		console.log(`Server running at ${address}`);
 	});
 }
-
 void start();
