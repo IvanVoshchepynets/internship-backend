@@ -1,10 +1,6 @@
 import { FastifyInstance } from "fastify";
 
-export async function findByUrl(fastify: FastifyInstance, url: string) {
-  return fastify.prisma.feed.findFirst({ where: { link: url } });
-}
-
-export async function createFeed(
+export async function upsertFeed(
   fastify: FastifyInstance,
   data: {
     title: string;
@@ -13,7 +9,21 @@ export async function createFeed(
     preview: string;
   }
 ) {
-  return fastify.prisma.feed.create({ data });
+  return fastify.prisma.feed.upsert({
+    where: { link: data.link },
+    update: {
+      title: data.title,
+      pubDate: data.pubDate,
+      preview: data.preview,
+    },
+    create: data,
+  });
+}
+
+export async function getFeedByUrl(fastify: FastifyInstance, url: string) {
+  return fastify.prisma.feed.findUnique({
+    where: { link: url },
+  });
 }
 
 export async function getAllFeeds(fastify: FastifyInstance) {
