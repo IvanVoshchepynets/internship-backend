@@ -1,11 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 import fp from "fastify-plugin";
 
-const prisma = new PrismaClient();
-
 export default fp(async (fastify) => {
+  const prisma = new PrismaClient();
+
   try {
-    await prisma.$connect(); 
+    await prisma.$connect();
     fastify.log.info("Connected to MongoDB via Prisma");
   } catch (err) {
     fastify.log.error("Failed to connect to MongoDB", err);

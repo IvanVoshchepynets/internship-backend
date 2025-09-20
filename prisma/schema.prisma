@@ -10,7 +10,7 @@ datasource db {
 model Feed {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   title    String
-  link     String
+  link     String   @unique
   pubDate  DateTime
   preview  String
 }
