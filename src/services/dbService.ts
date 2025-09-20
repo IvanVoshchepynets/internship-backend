@@ -1,22 +1,23 @@
 import { FastifyInstance } from "fastify";
 
-export const dbService = (fastify: FastifyInstance) => ({
-  async findByUrl(url: string) {
-    return fastify.prisma.feed.findFirst({ where: { link: url } });
-  },
+export async function findByUrl(fastify: FastifyInstance, url: string) {
+  return fastify.prisma.feed.findFirst({ where: { link: url } });
+}
 
-  async createFeed(data: {
+export async function createFeed(
+  fastify: FastifyInstance,
+  data: {
     title: string;
     link: string;
     pubDate: Date;
     preview: string;
-  }) {
-    return fastify.prisma.feed.create({ data });
-  },
+  }
+) {
+  return fastify.prisma.feed.create({ data });
+}
 
-  async getAllFeeds() {
-    return fastify.prisma.feed.findMany({
-      orderBy: { pubDate: "desc" },
-    });
-  },
-});
+export async function getAllFeeds(fastify: FastifyInstance) {
+  return fastify.prisma.feed.findMany({
+    orderBy: { pubDate: "desc" },
+  });
+}

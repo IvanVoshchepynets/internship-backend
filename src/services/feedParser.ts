@@ -1,39 +1,39 @@
 import Parser from "rss-parser";
 import retry from "async-retry";
-import { dbService } from "./dbService";
 import { FastifyInstance } from "fastify";
+import { findByUrl, createFeed } from "./dbService";
 
 const parser = new Parser();
 
-export const feedParser = (fastify: FastifyInstance) => ({
-  async parseFeed(url: string, force = 0) {
-    return retry(
-      async () => {
-        const db = dbService(fastify);
+export async function parseFeed(
+  fastify: FastifyInstance,
+  url: string,
+  force = 0
+) {
+  return retry(
+    async () => {
+      if (force === 0) {
+        const existing = await findByUrl(fastify, url);
+        if (existing) return existing;
+      }
 
-        if (force === 0) {
-          const existing = await db.findByUrl(url);
-          if (existing) return existing;
-        }
+      const feed = await parser.parseURL(url);
 
-        const feed = await parser.parseURL(url);
+      if (!feed.items || feed.items.length === 0) {
+        throw new Error("Feed is empty or invalid");
+      }
 
-        if (!feed.items || feed.items.length === 0) {
-          throw new Error("Feed is empty or invalid");
-        }
+      const firstItem = feed.items[0];
 
-        const firstItem = feed.items[0];
+      const newFeed = await createFeed(fastify, {
+        title: firstItem.title || "Без назви",
+        link: firstItem.link || url,
+        pubDate: firstItem.pubDate ? new Date(firstItem.pubDate) : new Date(),
+        preview: firstItem.contentSnippet || "",
+      });
 
-        const newFeed = await db.createFeed({
-          title: firstItem.title || "Без назви",
-          link: firstItem.link || url,
-          pubDate: firstItem.pubDate ? new Date(firstItem.pubDate) : new Date(),
-          preview: firstItem.contentSnippet || "",
-        });
-
-        return newFeed;
-      },
-      { retries: 3 },
-    );
-  },
-});
+      return newFeed;
+    },
+    { retries: 3 }
+  );
+}
