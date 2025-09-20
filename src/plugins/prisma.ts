@@ -4,6 +4,14 @@ import fp from "fastify-plugin";
 const prisma = new PrismaClient();
 
 export default fp(async (fastify) => {
+  try {
+    await prisma.$connect(); 
+    fastify.log.info("Connected to MongoDB via Prisma");
+  } catch (err) {
+    fastify.log.error("Failed to connect to MongoDB", err);
+    throw err;
+  }
+
   fastify.decorate("prisma", prisma);
 
   fastify.addHook("onClose", async (server) => {
