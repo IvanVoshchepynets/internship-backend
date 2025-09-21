@@ -2,6 +2,8 @@ import type { FastifyPluginAsync } from "fastify";
 import { getAllFeeds } from "../../services/dbService";
 import { parseFeed } from "../../services/feedParser";
 
+const DEFAULT_FEED_URL = "https://www.pravda.com.ua/rss/view_news";
+
 const feedRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
 	fastify.get(
 		"/feed",
@@ -19,7 +21,7 @@ const feedRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
 		async (request, reply) => {
 			const { url, force } = request.query as { url?: string; force: number };
 
-			const feedUrl = url || "https://www.pravda.com.ua/rss/view_news";
+			const feedUrl = url || DEFAULT_FEED_URL;
 
 			try {
 				const feed = await parseFeed(fastify, feedUrl, force);
