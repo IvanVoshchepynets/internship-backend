@@ -1,41 +1,18 @@
-import Fastify, {FastifyServerOptions} from "fastify";
-import {join} from "node:path";
 import AutoLoad from "@fastify/autoload";
-import configPlugin from "./config";
-import {getFeedDataRoutes} from "./modules/feedParser/routes/feedParser.route";
+import type { FastifyPluginAsync } from "fastify";
+import path from "path";
 
-export type AppOptions = Partial<FastifyServerOptions>
+const app: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
+	void fastify.register(AutoLoad, {
+		dir: path.join(__dirname, "plugins"),
+		options: opts,
+	});
 
-async function buildApp(options: AppOptions = {}){
+	void fastify.register(AutoLoad, {
+		dir: path.join(__dirname, "modules"),
+		options: opts,
+		dirNameRoutePrefix: false,
+	});
+};
 
-  const fastify = Fastify({logger: true})
-    await  fastify.register(configPlugin)
-
-    try {
-        fastify.decorate("pluginLoaded", (pluginName: string) => {
-            fastify.log.info(`✅ Plugin loaded: ${pluginName}`);
-        });
-
-        fastify.log.info("Starting to load plugins");
-        await fastify.register(AutoLoad, {
-            dir: join(__dirname, "plugins"),
-            options: options,
-            ignorePattern: /^((?!plugin).)*$/,
-        });
-
-        fastify.log.info("✅ Plugins loaded successfully");
-    } catch (error) {
-        fastify.log.error("Error in autoload:", error);
-        throw error;
-    }
-
-    fastify.get("/", async (request, reply) => {
-        return {hello: "world"}
-    })
-
-    fastify.register(getFeedDataRoutes)
-
-    return fastify
-}
-
-export default buildApp
+export default app;
