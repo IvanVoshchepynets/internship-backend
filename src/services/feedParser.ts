@@ -12,7 +12,7 @@ export async function parseFeed(
 ) {
 	return retry(
 		async () => {
-			if (force === 0) {
+			if (!force) {
 				const existing = await getFeedByUrl(fastify, url);
 				if (existing) return existing;
 			}

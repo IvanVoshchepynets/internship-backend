@@ -16,4 +16,3 @@ const app: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 };
 
 export default app;
-export { app };
