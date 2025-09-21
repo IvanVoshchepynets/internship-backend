@@ -7,7 +7,7 @@ export default async function healthRoutes(fastify: FastifyInstance) {
 
   fastify.get("/health/db", async () => {
     try {
-      await fastify.prisma.feed.findFirst();
+      await fastify.prisma.$runCommandRaw({ ping: 1 });
       return { status: "ok" };
     } catch (error) {
       fastify.log.error("DB health check failed:", error);
