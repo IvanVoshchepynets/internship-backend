@@ -29,9 +29,10 @@ export default async function authRoutes(fastify: FastifyInstance) {
 					data: { name, email, password: hashed },
 				});
 
+				fastify.log.info(`User registered: ${email}`);
 				return { id: user.id, email: user.email, name: user.name };
 			} catch (err) {
-				fastify.log.error(err);
+				fastify.log.error("Registration failed:", err);
 				return reply.internalServerError("Помилка при реєстрації");
 			}
 		},
@@ -48,14 +49,10 @@ export default async function authRoutes(fastify: FastifyInstance) {
 				};
 
 				const user = await fastify.prisma.user.findUnique({ where: { email } });
-				if (!user) {
-					return reply.unauthorized("Невірні дані");
-				}
+				if (!user) return reply.unauthorized("Невірні дані");
 
 				const valid = await bcrypt.compare(password, user.password);
-				if (!valid) {
-					return reply.unauthorized("Невірні дані");
-				}
+				if (!valid) return reply.unauthorized("Невірні дані");
 
 				const token = jwt.sign(
 					{ id: user.id, email: user.email, name: user.name },
@@ -63,9 +60,10 @@ export default async function authRoutes(fastify: FastifyInstance) {
 					{ expiresIn: "1h" },
 				);
 
+				fastify.log.info(`User logged in: ${email}`);
 				return { token };
 			} catch (err) {
-				fastify.log.error(err);
+				fastify.log.error("Login failed:", err);
 				return reply.internalServerError("Помилка при вході");
 			}
 		},

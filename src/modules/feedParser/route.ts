@@ -20,20 +20,21 @@ const feedRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
 		},
 		async (request, reply) => {
 			const { url, force } = request.query as { url?: string; force: number };
-
 			const feedUrl = url || DEFAULT_FEED_URL;
 
 			try {
 				const feed = await parseFeed(fastify, feedUrl, force);
+				fastify.log.info(`Feed fetched: ${feedUrl}`);
 				return feed;
 			} catch (err) {
-				fastify.log.error(err);
+				fastify.log.error(`Failed to fetch feed: ${feedUrl}`, err);
 				return reply.internalServerError("Не вдалося отримати фід");
 			}
 		},
 	);
 
 	fastify.get("/feeds", async () => {
+		fastify.log.info("Fetching all feeds from DB");
 		return getAllFeeds(fastify);
 	});
 };
