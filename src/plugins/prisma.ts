@@ -18,3 +18,9 @@ export default fp(async (fastify) => {
 		await server.prisma.$disconnect();
 	});
 });
+
+declare module "fastify" {
+	interface FastifyInstance {
+		prisma: PrismaClient;
+	}
+}

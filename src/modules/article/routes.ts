@@ -1,21 +1,12 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { FastifyPluginAsync } from "fastify";
+import { getArticleSchema } from "./schemas";
 
 const articleRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
 	fastify.get(
 		"/article",
-		{
-			schema: {
-				querystring: {
-					type: "object",
-					properties: {
-						url: { type: "string" },
-					},
-					required: ["url"],
-				},
-			},
-		},
+		{ schema: getArticleSchema },
 		async (request, reply) => {
 			const { url } = request.query as { url: string };
 
