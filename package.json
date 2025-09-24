@@ -7,7 +7,7 @@
 		"build": "tsc -p tsconfig.json",
 		"start": "node dist/index.js",
 		"lint": "biome check src",
-		"lint:fix": "biome check . --fix",
+		"lint:fix": "biome check src --fix",
 		"format": "biome format . --write"
 	},
 	"author": "",
