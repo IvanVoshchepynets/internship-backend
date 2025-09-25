@@ -1,27 +1,28 @@
 import type { FastifyPluginAsync } from "fastify";
 import { getAllFeeds } from "../../services/dbService";
 import { parseFeed } from "../../services/feedParser";
-import { getFeedSchema } from "./schemas";
+import { type GetFeedQuery, getFeedSchema } from "./schemas";
 
 const DEFAULT_FEED_URL = "https://www.pravda.com.ua/rss/view_news";
 
 const feedRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
-	fastify.get("/feed", { schema: getFeedSchema }, async (request, reply) => {
-		const { url, force } = request.query as {
-			url?: string;
-			force: number;
-		};
-		const feedUrl = url || DEFAULT_FEED_URL;
+	fastify.get<{ Querystring: GetFeedQuery }>(
+		"/feed",
+		{ schema: getFeedSchema },
+		async (request, reply) => {
+			const { url, force } = request.query;
+			const feedUrl = url || DEFAULT_FEED_URL;
 
-		try {
-			const feed = await parseFeed(fastify, feedUrl, force);
-			fastify.log.info(`Feed fetched: ${feedUrl}`);
-			return feed;
-		} catch (err) {
-			fastify.log.error(`Failed to fetch feed: ${feedUrl}`, err);
-			return reply.internalServerError("Не вдалося отримати фід");
-		}
-	});
+			try {
+				const feed = await parseFeed(fastify, feedUrl, force);
+				fastify.log.info(`Feed fetched: ${feedUrl}`);
+				return feed;
+			} catch (err) {
+				fastify.log.error(`Failed to fetch feed: ${feedUrl}`, err);
+				return reply.internalServerError("Не вдалося отримати фід");
+			}
+		},
+	);
 
 	fastify.get("/feeds", async () => {
 		fastify.log.info("Fetching all feeds from DB");
