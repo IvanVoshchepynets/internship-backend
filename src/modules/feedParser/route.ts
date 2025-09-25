@@ -1,39 +1,31 @@
 import type { FastifyPluginAsync } from "fastify";
 import { getAllFeeds } from "../../services/dbService";
 import { parseFeed } from "../../services/feedParser";
+import { type GetFeedQuery, getFeedSchema } from "./schemas";
 
 const DEFAULT_FEED_URL = "https://www.pravda.com.ua/rss/view_news";
 
 const feedRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
-	fastify.get(
+	fastify.get<{ Querystring: GetFeedQuery }>(
 		"/feed",
-		{
-			schema: {
-				querystring: {
-					type: "object",
-					properties: {
-						url: { type: "string" },
-						force: { type: "integer", enum: [0, 1], default: 0 },
-					},
-				},
-			},
-		},
+		{ schema: getFeedSchema },
 		async (request, reply) => {
-			const { url, force } = request.query as { url?: string; force: number };
-
+			const { url, force } = request.query;
 			const feedUrl = url || DEFAULT_FEED_URL;
 
 			try {
 				const feed = await parseFeed(fastify, feedUrl, force);
+				fastify.log.info(`Feed fetched: ${feedUrl}`);
 				return feed;
 			} catch (err) {
-				fastify.log.error(err);
+				fastify.log.error(`Failed to fetch feed: ${feedUrl}`, err);
 				return reply.internalServerError("Не вдалося отримати фід");
 			}
 		},
 	);
 
 	fastify.get("/feeds", async () => {
+		fastify.log.info("Fetching all feeds from DB");
 		return getAllFeeds(fastify);
 	});
 };
