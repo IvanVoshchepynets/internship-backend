@@ -15,9 +15,12 @@ const app: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 		secret: process.env.JWT_SECRET || "supersecret",
 	});
 
+	void fastify.register(import("./plugins/cron"));
+
 	void fastify.register(AutoLoad, {
 		dir: path.join(__dirname, "plugins"),
 		options: opts,
+		ignorePattern: /cron(\.ts|\.js)$/,
 	});
 
 	void fastify.register(AutoLoad, {
