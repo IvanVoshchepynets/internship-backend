@@ -4,12 +4,11 @@ import fp from "fastify-plugin";
 const pluginName = "sensible-plugin";
 
 export default fp(
-	async (fastify) => {
-		fastify.register(sensible);
-
-		fastify.pluginLoaded(pluginName);
-	},
-	{
-		name: pluginName,
-	},
+  async (fastify) => {
+    await fastify.register(sensible);
+    fastify.log.info(`${pluginName} loaded`);
+  },
+  {
+    name: pluginName,
+  },
 );
