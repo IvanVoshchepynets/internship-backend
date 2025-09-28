@@ -15,11 +15,13 @@ export default fp(async (fastify) => {
 
 	await fastify.register(swaggerUi, {
 		routePrefix: "/docs",
+		staticCSP: true,
+		transformStaticCSP: (header) => header,
 		uiConfig: {
 			docExpansion: "list",
 			deepLinking: false,
 		},
 	});
 
-	fastify.log.info("Swagger UI registrated on /docs");
+	fastify.log.info("Swagger UI available за /docs");
 });
