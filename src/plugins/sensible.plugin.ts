@@ -5,9 +5,8 @@ const pluginName = "sensible-plugin";
 
 export default fp(
 	async (fastify) => {
-		fastify.register(sensible);
-
-		fastify.pluginLoaded(pluginName);
+		await fastify.register(sensible);
+		fastify.log.info(`${pluginName} loaded`);
 	},
 	{
 		name: pluginName,
