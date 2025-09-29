@@ -22,3 +22,15 @@ model User {
   password  String
   createdAt DateTime @default(now())
 }
+
+model LineItem {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  size        String
+  minCpm      Float
+  maxCpm      Float
+  geo         String
+  adType      String
+  frequency   Int
+  creativeUrl String
+  createdAt   DateTime @default(now())
+}

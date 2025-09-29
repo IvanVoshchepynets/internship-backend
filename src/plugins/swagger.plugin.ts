@@ -23,5 +23,5 @@ export default fp(async (fastify) => {
 		},
 	});
 
-	fastify.log.info("Swagger UI available за /docs");
+	fastify.log.info("Swagger UI available on /docs");
 });

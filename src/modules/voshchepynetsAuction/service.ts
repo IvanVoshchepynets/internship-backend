@@ -1,49 +1,51 @@
-import type { LineItem } from "./types";
+import type { LineItem } from "@prisma/client";
+import type { FastifyInstance } from "fastify";
+import fs from "fs";
+import path from "path";
 
-const lineItems: LineItem[] = [];
+type CreateLineItemInput = Omit<LineItem, "id" | "createdAt">;
 
-for (let i = 1; i <= 5; i++) {
-	lineItems.push({
-		id: `${i}`,
-		size: "300x250",
-		minCPM: 1,
-		maxCPM: 5,
-		geo: "UA",
-		adType: "banner",
-		frequency: 3,
-		creativeUrl: `/creatives/test${i}.jpg`,
-	});
+export async function saveLineItem(
+	fastify: FastifyInstance,
+	data: CreateLineItemInput,
+): Promise<LineItem> {
+	try {
+		const saved = await fastify.prisma.lineItem.create({ data });
+		fastify.log.info({ lineItem: saved }, "Line item saved");
+		return saved;
+	} catch (err) {
+		fastify.log.error("DB save error:", err);
+		throw new Error("DB error");
+	}
 }
 
-export const voshchepynetsService = {
-	getForm: () => {
-		return {
-			fields: [
-				"size",
-				"minCPM",
-				"maxCPM",
-				"geo",
-				"adType",
-				"frequency",
-				"creative",
-			],
-		};
-	},
+export function saveCreative(file: any): string {
+	const uploadDir = path.join(process.cwd(), "uploads");
+	if (!fs.existsSync(uploadDir)) {
+		fs.mkdirSync(uploadDir, { recursive: true });
+	}
 
-	saveLineItem: (
-		data: Omit<LineItem, "id" | "creativeUrl">,
-		creativeFile: string,
-	) => {
-		const newItem: LineItem = {
-			...data,
-			id: Date.now().toString(),
-			creativeUrl: `/creatives/${creativeFile}`,
-		};
-		lineItems.push(newItem);
-		return newItem;
-	},
+	const filePath = path.join(uploadDir, file.filename);
+	const ws = fs.createWriteStream(filePath);
+	file.file.pipe(ws);
 
-	matchBidRequest: (geo: string, size: string) => {
-		return lineItems.find((li) => li.geo === geo && li.size === size) || null;
+	return `/uploads/${file.filename}`;
+}
+
+export async function getMatchingLineItem(
+	fastify: FastifyInstance,
+	criteria: {
+		size: string;
+		geo: string;
+		cpm: number;
 	},
-};
+): Promise<LineItem | null> {
+	return fastify.prisma.lineItem.findFirst({
+		where: {
+			size: criteria.size,
+			geo: { contains: criteria.geo },
+			minCpm: { lte: criteria.cpm },
+			maxCpm: { gte: criteria.cpm },
+		},
+	});
+}
