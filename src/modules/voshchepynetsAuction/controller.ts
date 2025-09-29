@@ -6,11 +6,11 @@ import { getMatchingLineItem, saveCreative, saveLineItem } from "./service";
 const adServerController: FastifyPluginAsync = async (fastify) => {
 	await fastify.register(multipart);
 
-	fastify.get("/adServer/form", async (_, reply) => {
+	fastify.get("/form", async (_, reply) => {
 		reply.type("text/html").send(formHtml);
 	});
 
-	fastify.post("/adServer/form", async (req, reply) => {
+	fastify.post("/form", async (req, reply) => {
 		const parts = req.parts();
 
 		let size = "";
@@ -35,7 +35,7 @@ const adServerController: FastifyPluginAsync = async (fastify) => {
 		}
 
 		if (!size || !geo || !creativeUrl) {
-			return reply.badRequest("Всі поля обовʼязкові");
+			return reply.badRequest("All fields are required");
 		}
 
 		const saved = await saveLineItem(fastify, {
@@ -47,10 +47,11 @@ const adServerController: FastifyPluginAsync = async (fastify) => {
 			frequency,
 			creativeUrl,
 		});
+
 		return { success: true, saved };
 	});
 
-	fastify.post("/adServer/bid", async (req, reply) => {
+	fastify.post("/bid", async (req, reply) => {
 		const { size, geo, cpm } = req.body as {
 			size: string;
 			geo: string;
@@ -66,7 +67,7 @@ const adServerController: FastifyPluginAsync = async (fastify) => {
 		return {
 			id: item.id,
 			ad: `<img src="${item.creativeUrl}" width="${item.size.split("x")[0]}" height="${item.size.split("x")[1]}" />`,
-			cpm: cpm,
+			cpm,
 			currency: "USD",
 		};
 	});
