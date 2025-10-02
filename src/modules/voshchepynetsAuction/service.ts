@@ -34,18 +34,14 @@ export function saveCreative(file: any): string {
 
 export async function getMatchingLineItem(
 	fastify: FastifyInstance,
-	criteria: {
-		size: string;
-		geo: string;
-		cpm: number;
-	},
+	{ size, geo, cpm }: { size: string; geo: string; cpm: number },
 ): Promise<LineItem | null> {
 	return fastify.prisma.lineItem.findFirst({
 		where: {
-			size: criteria.size,
-			geo: { contains: criteria.geo },
-			minCpm: { lte: criteria.cpm },
-			maxCpm: { gte: criteria.cpm },
+			size,
+			geo: { contains: geo },
+			minCpm: { lte: cpm },
+			maxCpm: { gte: cpm },
 		},
 	});
 }

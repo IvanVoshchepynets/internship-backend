@@ -13,26 +13,26 @@ const adServerController: FastifyPluginAsync = async (fastify) => {
 	fastify.post("/form", async (req, reply) => {
 		const parts = req.parts();
 
-		let size = "";
-		let minCpm = 0;
-		let maxCpm = 0;
-		let geo = "";
-		let adType = "";
-		let frequency = 0;
-		let creativeUrl = "";
+		const formData: Record<string, any> = {};
 
 		for await (const part of parts) {
 			if (part.type === "file") {
-				creativeUrl = saveCreative(part);
+				formData.creativeUrl = saveCreative(part);
 			} else if (part.type === "field") {
-				if (part.fieldname === "size") size = part.value as string;
-				if (part.fieldname === "minCpm") minCpm = Number(part.value);
-				if (part.fieldname === "maxCpm") maxCpm = Number(part.value);
-				if (part.fieldname === "geo") geo = part.value as string;
-				if (part.fieldname === "adType") adType = part.value as string;
-				if (part.fieldname === "frequency") frequency = Number(part.value);
+				const { fieldname, value } = part;
+				formData[fieldname] = value;
 			}
 		}
+
+		const { size, minCpm, maxCpm, geo, adType, frequency, creativeUrl } = {
+			size: formData.size as string,
+			minCpm: Number(formData.minCpm || 0),
+			maxCpm: Number(formData.maxCpm || 0),
+			geo: formData.geo as string,
+			adType: formData.adType as string,
+			frequency: Number(formData.frequency || 0),
+			creativeUrl: formData.creativeUrl as string,
+		};
 
 		if (!size || !geo || !creativeUrl) {
 			return reply.badRequest("All fields are required");

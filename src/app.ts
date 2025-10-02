@@ -3,13 +3,12 @@ import cors from "@fastify/cors";
 import fastifyJwt from "@fastify/jwt";
 import type { FastifyPluginAsync } from "fastify";
 import path from "path";
+import clickhousePlugin from "./plugins/clickhouse";
 
 const app: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 	fastify.log.info("Starting application...");
 
-	await fastify.register(cors, {
-		origin: "*",
-	});
+	await fastify.register(cors, { origin: "*" });
 
 	fastify.register(fastifyJwt, {
 		secret: process.env.JWT_SECRET || "supersecret",
