@@ -1,37 +1,24 @@
-import axios from "axios";
-import * as cheerio from "cheerio";
+import type { JsonSchemaToTsProvider } from "@fastify/type-provider-json-schema-to-ts";
 import type { FastifyPluginAsync } from "fastify";
 import { getArticleSchema } from "./schemas";
+import { parseArticle } from "./service";
 
 const articleRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
-	fastify.get(
+	const route = fastify.withTypeProvider<JsonSchemaToTsProvider>();
+
+	route.get(
 		"/article",
 		{ schema: getArticleSchema },
 		async (request, reply) => {
-			const { url } = request.query as { url: string };
+			const { url } = request.query;
 
 			try {
-				const { data } = await axios.get(url);
-				const $ = cheerio.load(data);
-
-				const title = $("h1").first().text() || "Без назви";
-				const paragraphs = $("p")
-					.map((_, el) => $(el).text())
-					.get();
-				const images = $("img")
-					.map((_, el) => $(el).attr("src"))
-					.get();
-
+				const article = await parseArticle(url);
 				fastify.log.info(`Parsed article from: ${url}`);
-
-				return {
-					title,
-					content: paragraphs.slice(0, 5),
-					images,
-				};
+				return article;
 			} catch (error) {
-				fastify.log.error(`Article parsing failed for ${url}:`, error);
-				return reply.internalServerError("Не вдалося спарсити статтю");
+				fastify.log.error(error);
+				return reply.internalServerError("Failed to parse article");
 			}
 		},
 	);

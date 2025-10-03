@@ -1,11 +1,8 @@
 import bcrypt from "bcrypt";
 import type { FastifyInstance } from "fastify";
-import jwt from "jsonwebtoken";
 import { loginSchema, registerSchema } from "./schemas";
 
 export default async function authRoutes(fastify: FastifyInstance) {
-	const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
-
 	fastify.post(
 		"/auth/register",
 		{ schema: registerSchema },
@@ -54,9 +51,8 @@ export default async function authRoutes(fastify: FastifyInstance) {
 				const valid = await bcrypt.compare(password, user.password);
 				if (!valid) return reply.unauthorized("Невірні дані");
 
-				const token = jwt.sign(
+				const token = fastify.jwt.sign(
 					{ id: user.id, email: user.email, name: user.name },
-					JWT_SECRET,
 					{ expiresIn: "1h" },
 				);
 

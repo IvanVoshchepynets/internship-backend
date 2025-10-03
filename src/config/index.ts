@@ -26,9 +26,9 @@ export default fp(
 				},
 			});
 
-			fastify.log.info("✅ Environment variables loaded successfully");
+			fastify.log.info("Environment variables loaded successfully");
 		} catch (error) {
-			fastify.log.error("❌ Error in config plugin:", error);
+			fastify.log.error("Error in config plugin:", error);
 			throw error;
 		}
 	},
