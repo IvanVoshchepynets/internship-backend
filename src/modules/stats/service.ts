@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 
 export interface StatEvent {
 	event: string;
-	timestamp: number;
+	timestamp?: number;
 	pageUrl: string;
 	adapter?: string;
 	creativeId?: string;
@@ -20,7 +20,11 @@ export async function saveEvent(
 	events: StatEvent | StatEvent[],
 ) {
 	const arr = Array.isArray(events) ? events : [events];
-	buffer.push(...arr);
+
+	const validEvents = arr.filter((e) => e.event && e.event.trim() !== "");
+	if (validEvents.length === 0) return;
+
+	buffer.push(...validEvents);
 
 	const now = Date.now();
 	if (buffer.length >= MAX_BUFFER || now - lastFlush > MAX_INTERVAL) {
@@ -31,15 +35,24 @@ export async function saveEvent(
 
 async function flushToClickHouse(fastify: FastifyInstance) {
 	if (buffer.length === 0) return;
-	const values = buffer.map((e) => ({
-		event: e.event,
-		timestamp: new Date(Math.floor(e.timestamp / 1000) * 1000),
-		pageUrl: e.pageUrl,
-		adapter: e.adapter ?? null,
-		creativeId: e.creativeId ?? null,
-		cpm: e.cpm ?? null,
-		geo: e.geo ?? null,
-	}));
+
+	const values = buffer.map((e) => {
+		let ts: string | null = null;
+		if (e.timestamp && !isNaN(e.timestamp)) {
+			const d = new Date(e.timestamp);
+			ts = d.toISOString().replace("T", " ").split(".")[0];
+		}
+
+		return {
+			event: e.event,
+			timestamp: ts ?? new Date().toISOString().replace("T", " ").split(".")[0],
+			pageUrl: e.pageUrl || "",
+			adapter: e.adapter ?? null,
+			creativeId: e.creativeId ?? null,
+			cpm: e.cpm ?? null,
+			geo: e.geo ?? null,
+		};
+	});
 
 	try {
 		await fastify.clickhouse.insert({
@@ -62,7 +75,7 @@ export async function queryStats(fastify: FastifyInstance, params: any) {
 		adapter,
 		cpm_from,
 		cpm_to,
-		limit = 50,
+		limit = 100,
 		offset = 0,
 		format = "json",
 	} = params;
