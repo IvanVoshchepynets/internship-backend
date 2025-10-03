@@ -22,7 +22,7 @@ export default fp(
 				query: `
           CREATE TABLE IF NOT EXISTS ${DB_NAME}.stats (
             event String,
-            timestamp DateTime,
+            timestamp DateTime('Europe/Kiev') DEFAULT now('Europe/Kiev'), 
             pageUrl String,
             adapter Nullable(String),
             creativeId Nullable(String),
@@ -47,9 +47,7 @@ export default fp(
 			fastify.log.info("ClickHouse connection closed");
 		});
 	},
-	{
-		name: "clickhouse-plugin",
-	},
+	{ name: "clickhouse-plugin" },
 );
 
 declare module "fastify" {
