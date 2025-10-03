@@ -18,8 +18,8 @@ services:
     container_name: clickhouse
     restart: always
     ports:
-      - "8123:8123"  # HTTP API
-      - "9000:9000"  # Native TCP protocol
+      - "8123:8123"  
+      - "9000:9000"  
     environment:
       - CLICKHOUSE_DB=mydb
       - CLICKHOUSE_USER=default

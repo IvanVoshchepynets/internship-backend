@@ -2,7 +2,6 @@ import type { FastifyPluginAsync } from "fastify";
 import { queryStats, type StatEvent, saveEvent } from "./service";
 
 const statsController: FastifyPluginAsync = async (fastify) => {
-	// буде доступно як POST /stats/event
 	fastify.post("/event", async (req, reply) => {
 		const body = req.body as StatEvent | StatEvent[];
 		if (!body) {
@@ -13,7 +12,6 @@ const statsController: FastifyPluginAsync = async (fastify) => {
 		return { success: true };
 	});
 
-	// буде доступно як GET /stats/query
 	fastify.get("/query", async (req, reply) => {
 		const params = req.query as any;
 		const data = await queryStats(fastify, params);

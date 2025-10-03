@@ -36,7 +36,7 @@ export default fp(
 
 			fastify.log.info("ClickHouse database and stats table initialized");
 		} catch (err) {
-			fastify.log.error("Failed to initialize ClickHouse:", err);
+			fastify.log.error({ err }, "Failed to initialize ClickHouse");
 			throw err;
 		}
 

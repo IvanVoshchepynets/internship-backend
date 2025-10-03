@@ -12,8 +12,8 @@ export interface StatEvent {
 
 let buffer: StatEvent[] = [];
 let lastFlush = Date.now();
-const MAX_BUFFER = 100;
-const MAX_INTERVAL = 10_000;
+const MAX_BUFFER = 1;
+const MAX_INTERVAL = 1000;
 
 export async function saveEvent(
 	fastify: FastifyInstance,
@@ -33,7 +33,7 @@ async function flushToClickHouse(fastify: FastifyInstance) {
 	if (buffer.length === 0) return;
 	const values = buffer.map((e) => ({
 		event: e.event,
-		timestamp: new Date(e.timestamp),
+		timestamp: new Date(Math.floor(e.timestamp / 1000) * 1000),
 		pageUrl: e.pageUrl,
 		adapter: e.adapter ?? null,
 		creativeId: e.creativeId ?? null,
@@ -49,8 +49,8 @@ async function flushToClickHouse(fastify: FastifyInstance) {
 		});
 		fastify.log.info(`Flushed ${buffer.length} stats events to ClickHouse`);
 		buffer = [];
-	} catch (err) {
-		fastify.log.error("ClickHouse insert failed:", err);
+	} catch (err: any) {
+		fastify.log.error({ err, values }, "ClickHouse insert failed");
 	}
 }
 
@@ -100,14 +100,8 @@ export async function queryStats(fastify: FastifyInstance, params: any) {
 
 	const result = await fastify.clickhouse.query({
 		query,
-		format: format === "csv" ? "CSV" : format === "xlsx" ? "JSON" : "JSON",
+		format: format === "csv" ? "CSV" : "JSON",
 	});
 
-	if (format === "csv") {
-		return result.text();
-	} else if (format === "xlsx") {
-		return result.json();
-	} else {
-		return result.json();
-	}
+	return format === "csv" ? result.text() : result.json();
 }
