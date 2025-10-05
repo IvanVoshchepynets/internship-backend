@@ -3,9 +3,12 @@ import cors from "@fastify/cors";
 import fastifyJwt from "@fastify/jwt";
 import type { FastifyPluginAsync } from "fastify";
 import path from "path";
+import OpenTelemetryModule from "./modules/openTelemetry";
 
 const app: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 	fastify.log.info("Starting application...");
+
+	await OpenTelemetryModule(fastify);
 
 	await fastify.register(cors, { origin: "*" });
 

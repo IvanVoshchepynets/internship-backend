@@ -75,7 +75,7 @@ export async function queryStats(fastify: FastifyInstance, params: any) {
 		adapter,
 		cpm_from,
 		cpm_to,
-		limit = 100,
+		limit = 300,
 		offset = 0,
 		format = "json",
 	} = params;
