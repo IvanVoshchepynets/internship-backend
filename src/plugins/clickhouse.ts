@@ -2,27 +2,32 @@ import { type ClickHouseClient, createClient } from "@clickhouse/client";
 import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 
-const DB_NAME = "mydb";
-
 export default fp(
 	async (fastify: FastifyInstance) => {
+		const {
+			CLICKHOUSE_HOST,
+			CLICKHOUSE_USER,
+			CLICKHOUSE_PASSWORD,
+			CLICKHOUSE_DB,
+		} = fastify.config;
+
 		const client: ClickHouseClient = createClient({
-			host: process.env.CLICKHOUSE_HOST || "http://localhost:8123",
-			username: process.env.CLICKHOUSE_USER || "default",
-			password: process.env.CLICKHOUSE_PASSWORD || "mypassword",
-			database: DB_NAME,
+			host: CLICKHOUSE_HOST,
+			username: CLICKHOUSE_USER,
+			password: CLICKHOUSE_PASSWORD,
+			database: CLICKHOUSE_DB,
 		});
 
 		try {
 			await client.exec({
-				query: `CREATE DATABASE IF NOT EXISTS ${DB_NAME}`,
+				query: `CREATE DATABASE IF NOT EXISTS ${CLICKHOUSE_DB}`,
 			});
 
 			await client.exec({
 				query: `
-          CREATE TABLE IF NOT EXISTS ${DB_NAME}.stats (
+          CREATE TABLE IF NOT EXISTS ${CLICKHOUSE_DB}.stats (
             event String,
-            timestamp DateTime('Europe/Kiev') DEFAULT now('Europe/Kiev'), 
+            timestamp DateTime('Europe/Kiev') DEFAULT now('Europe/Kiev'),
             pageUrl String,
             adapter Nullable(String),
             creativeId Nullable(String),

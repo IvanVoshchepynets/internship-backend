@@ -1,18 +1,18 @@
+import type { JsonSchemaToTsProvider } from "@fastify/type-provider-json-schema-to-ts";
 import type { FastifyPluginAsync } from "fastify";
+import { getQuerySchema, postEventSchema } from "./schemas";
 import { queryStats, type StatEvent, saveEvent } from "./service";
 
 const statsController: FastifyPluginAsync = async (fastify) => {
-	fastify.post("/event", async (req, reply) => {
-		const body = req.body as StatEvent | StatEvent[];
-		if (!body) {
-			return reply.badRequest("No event data");
-		}
+	const route = fastify.withTypeProvider<JsonSchemaToTsProvider>();
 
+	route.post("/event", { schema: postEventSchema }, async (req, reply) => {
+		const body = req.body as StatEvent | StatEvent[];
 		await saveEvent(fastify, body);
 		return { success: true };
 	});
 
-	fastify.get("/query", async (req, reply) => {
+	route.get("/query", { schema: getQuerySchema }, async (req, reply) => {
 		const params = req.query as any;
 		const data = await queryStats(fastify, params);
 
