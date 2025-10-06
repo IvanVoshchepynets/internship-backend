@@ -1,17 +1,26 @@
+import { fastifySchedule } from "@fastify/schedule";
 import fp from "fastify-plugin";
-import cron from "node-cron";
+import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
 import { parseFeed } from "../services/feedParser";
 
 export default fp(async (fastify) => {
 	fastify.log.info("Cron plugin registered");
 
-	cron.schedule("*/5 * * * *", async () => {
-		try {
-			const DEFAULT_FEED_URL = "https://www.pravda.com.ua/rss/view_news";
-			await parseFeed(fastify, DEFAULT_FEED_URL, 1);
-			fastify.log.info("Feed updated by cron");
-		} catch (err) {
-			fastify.log.error("Cron feed update failed", err);
-		}
+	await fastify.register(fastifySchedule);
+
+	fastify.ready().then(() => {
+		const task = new AsyncTask("feed-update-task", async () => {
+			try {
+				const DEFAULT_FEED_URL = "https://www.pravda.com.ua/rss/view_news";
+				await parseFeed(fastify, DEFAULT_FEED_URL, 1);
+				fastify.log.info("Feed updated by cron (schedule)");
+			} catch (err) {
+				fastify.log.error("Cron schedule feed update failed", err);
+			}
+		});
+
+		const job = new SimpleIntervalJob({ minutes: 5 }, task);
+
+		fastify.scheduler.addSimpleIntervalJob(job);
 	});
 });
