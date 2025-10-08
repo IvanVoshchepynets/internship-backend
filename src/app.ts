@@ -11,6 +11,10 @@ const app: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 	await OpenTelemetryModule(fastify);
 
 	await fastify.register(cors, { origin: "*" });
+	await fastify.register(cors, {
+  	origin: ["http://localhost:5173"], 
+ 	credentials: true,
+	});
 
 	fastify.register(fastifyJwt, {
 		secret: process.env.JWT_SECRET || "supersecret",
