@@ -7,7 +7,10 @@ import path from "path";
 const app: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 	fastify.log.info("Starting application...");
 
-	await fastify.register(cors, { origin: "*" });
+	await fastify.register(cors, {
+  	origin: ["http://localhost:5173"], 
+ 	credentials: true,
+	});
 
 	fastify.register(fastifyJwt, {
 		secret: process.env.JWT_SECRET || "supersecret",

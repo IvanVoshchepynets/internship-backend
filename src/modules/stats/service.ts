@@ -39,9 +39,10 @@ async function flushToClickHouse(fastify: FastifyInstance) {
 	const values = buffer.map((e) => {
 		let ts: string | null = null;
 		if (e.timestamp && !isNaN(e.timestamp)) {
-			const d = new Date(e.timestamp);
+			const d = new Date(e.timestamp * 1000); 
 			ts = d.toISOString().replace("T", " ").split(".")[0];
 		}
+
 
 		return {
 			event: e.event,
