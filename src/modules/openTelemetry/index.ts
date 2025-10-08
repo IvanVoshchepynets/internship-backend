@@ -16,16 +16,15 @@ import { FsInstrumentation } from "@opentelemetry/instrumentation-fs";
 import { MongoDBInstrumentation } from "@opentelemetry/instrumentation-mongodb";
 import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
-import * as dotenv from "dotenv";
 
-dotenv.config();
+import attachShutdownHook from "./otelSdk.hook";
 
 const OpenTelemetryModule = async (fastify: FastifyInstance) => {
   const otelEnabled = process.env.ENABLE_OTEL?.toLowerCase() === "true";
 
   if (!otelEnabled) {
-    fastify.log.info("ℹ️ OpenTelemetry вимкнено (ENABLE_OTEL=false)");
-    return; 
+    fastify.log.info("OpenTelemetry вимкнено (ENABLE_OTEL=false)");
+    return;
   }
 
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
@@ -71,18 +70,12 @@ const OpenTelemetryModule = async (fastify: FastifyInstance) => {
     fastify.log.info("OpenTelemetry SDK started (Console exporters).");
   } catch (err) {
     fastify.log.error({ err }, "Failed to start OpenTelemetry SDK");
+    return;
   }
 
   fastify.decorate("otelSdk", sdk);
 
-  fastify.addHook("onClose", async () => {
-    try {
-      await sdk.shutdown();
-      fastify.log.info("OpenTelemetry SDK shutdown complete.");
-    } catch (err) {
-      fastify.log.error({ err }, "Error shutting down OpenTelemetry SDK.");
-    }
-  });
+  await attachShutdownHook(fastify, sdk);
 };
 
 export default OpenTelemetryModule;
