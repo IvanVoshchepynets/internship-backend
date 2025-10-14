@@ -17,7 +17,7 @@ const adServerController: FastifyPluginAsync = async (fastify) => {
 
 		for await (const part of parts) {
 			if (part.type === "file") {
-				formData.creativeUrl = saveCreative(part);
+  				formData.creativeUrl = await saveCreative(part);
 			} else if (part.type === "field") {
 				const { fieldname, value } = part;
 				formData[fieldname] = value;
@@ -65,11 +65,22 @@ const adServerController: FastifyPluginAsync = async (fastify) => {
 		}
 
 		return {
-			id: item.id,
-			ad: `<img src="${item.creativeUrl}" width="${item.size.split("x")[0]}" height="${item.size.split("x")[1]}" />`,
-			cpm,
-			currency: "USD",
-		};
+  body: {
+    bids: [
+      {
+        requestId: "some-id",
+        cpm: item.minCpm,
+        width: Number(item.size.split("x")[0]),
+        height: Number(item.size.split("x")[1]),
+        ad: `<img src="${item.creativeUrl}" width="${item.size.split("x")[0]}" height="${item.size.split("x")[1]}"/>`,
+        currency: "USD",
+        netRevenue: true,
+        ttl: 300,
+      },
+    ],
+  },
+};
+
 	});
 };
 

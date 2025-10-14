@@ -11,7 +11,7 @@ export default fp(async (fastify) => {
 	fastify.ready().then(() => {
 		const task = new AsyncTask("feed-update-task", async () => {
 			try {
-				const DEFAULT_FEED_URL = "https://www.pravda.com.ua/rss/view_news";
+				const DEFAULT_FEED_URL = "https://api.rss2json.com/v1/api.json?rss_url=https://rss.unian.net/site/news_ukr.rss";
 				await parseFeed(fastify, DEFAULT_FEED_URL, 1);
 				fastify.log.info("Feed updated by cron (schedule)");
 			} catch (err) {
