@@ -39,9 +39,10 @@ async function flushToClickHouse(fastify: FastifyInstance) {
 	const values = buffer.map((e) => {
 		let ts: string | null = null;
 		if (e.timestamp && !isNaN(e.timestamp)) {
-			const d = new Date(e.timestamp);
+			const d = new Date(e.timestamp * 1000); 
 			ts = d.toISOString().replace("T", " ").split(".")[0];
 		}
+
 
 		return {
 			event: e.event,
@@ -75,7 +76,7 @@ export async function queryStats(fastify: FastifyInstance, params: any) {
 		adapter,
 		cpm_from,
 		cpm_to,
-		limit = 100,
+		limit = 300,
 		offset = 0,
 		format = "json",
 	} = params;
